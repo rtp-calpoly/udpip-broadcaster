@@ -9,7 +9,6 @@ src/Makefile*
 /config.status
 /Makefile
 /config.h.in
-/configure
 /configure.ac
 /autoscan.log
 /config.guess
@@ -21,3 +20,5 @@ src/Makefile*
 /Makefile.am
 /Makefile.in
 /missing
+/autom4te.cache
+/aclocal.m4
