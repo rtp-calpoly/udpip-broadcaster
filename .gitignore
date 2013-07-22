@@ -1,13 +1,23 @@
-# http://www.gnu.org/software/automake
-
-Makefile.in
-
-# http://www.gnu.org/software/autoconf
-
-/autom4te.cache
-/aclocal.m4
-/compile
+docs/html
+*~
+src/netleveltool
+src/*.[oa]
+src/.deps
+src/Makefile*
+/config.h
+/config.log
+/config.status
+/Makefile
+/config.h.in
 /configure
+/configure.ac
+/autoscan.log
+/config.guess
+/config.sub
 /depcomp
 /install-sh
+/libtool
+/ltmain.sh
+/Makefile.am
+/Makefile.in
 /missing
