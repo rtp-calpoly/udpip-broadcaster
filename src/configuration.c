@@ -59,15 +59,17 @@ int read_configuration(int argc, char** argv, configuration_t* cfg)
 		{"version",	no_argument,		NULL, 	'v'	},
 		{"tx",		required_argument,	NULL, 	't'	},
 		{"rx",  	required_argument,	NULL, 	'r'	},
+		{"apptx",	required_argument,	NULL, 	'u'	},
+		{"apprx",  	required_argument,	NULL, 	'w'	},
 		{"ifname",	required_argument,	NULL,	'i'	},
 		{0,0,0,0}
 	};
 	
 	while
-		( ( read = getopt_long(argc, argv, "ehvt:rl:i:f:", args, &index) )
+		( ( read = getopt_long(argc, argv, "hevt:r:i:u:w:", args, &index) )
 				> -1 )
 	{
-		
+
 		switch(read)
 		{
 			case 't':
@@ -79,7 +81,17 @@ int read_configuration(int argc, char** argv, configuration_t* cfg)
 				
 				cfg->rx_port = atoi(optarg);
 				break;
-			
+
+			case 'u':
+
+				cfg->app_tx_port = atoi(optarg);
+				break;
+
+			case 'w':
+
+				cfg->app_rx_port = atoi(optarg);
+				break;
+
 			case 'i':
 			
 				if ( strlen(optarg) > IF_NAMESIZE )
@@ -127,14 +139,13 @@ int check_configuration(configuration_t *cfg)
 	}
 
 	if ( ( cfg->tx_port <= 0 ) || ( cfg->rx_port <= 0 ) )
-	{
-		handle_app_error("Both TX and RX port must be set.\n");
-	}
+		{ handle_app_error("Both TX and RX port must be set.\n"); }
 	
 	if ( strlen(cfg->if_name) <= 0  )
-	{
-		handle_app_error("Link Layer interface name must be provided.\n");
-	}
+		{ handle_app_error("Network interface name must be provided.\n"); }
+
+	if ( ( cfg->app_tx_port <= 0 ) || ( cfg->app_rx_port <= 0 ) )
+		{ handle_app_error("Both APP. TX and RX port must be set.\n"); }
 
 	return(EX_OK);
 
@@ -150,6 +161,8 @@ void print_configuration(const configuration_t *cfg)
 	}
 	
 	log_app_msg(">>> Configuration = \n{\n");
+	log_app_msg("\t.app_tx_port = %d\n", cfg->app_tx_port);
+	log_app_msg("\t.app_rx_port = %d\n", cfg->app_rx_port);
 	log_app_msg("\t.tx_port = %d\n", cfg->tx_port);
 	log_app_msg("\t.rx_port = %d\n", cfg->rx_port);
 	log_app_msg("\t.if_name = %s\n", cfg->if_name);

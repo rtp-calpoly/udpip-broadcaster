@@ -51,10 +51,13 @@ bool __verbose;
 typedef struct configuration
 {
 	
-	int tx_port;							/*!< Indicates transmission mode. */
-	int rx_port;							/*!< Indicates reception mode. */
+	int app_tx_port;						/**< Application tx port. */
+	int app_rx_port;						/**< Application rx port. */
+
+	int tx_port;							/*!< Network tx port. */
+	int rx_port;							/*!< Network rx port. */
 	
-	char if_name[LEN__LL_IF_NAME_BUFFER];	/*!< Name of the link interface. */
+	char if_name[LEN__LL_IF_NAME_BUFFER];	/*!< Name of the interface. */
 
 } configuration_t;
 

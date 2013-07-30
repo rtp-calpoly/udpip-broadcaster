@@ -2,3 +2,7 @@
 * developer: rtpardavila@gmail.com
 * date: 2013.05.07
 
+* NOTES:
+1) This program utilizes the port 6666/udp, which shall be registered in the
+	/etc/services file.
+

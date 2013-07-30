@@ -1,4 +1,4 @@
-/*
+/**
  * @file main.c
  * @author Ricardo Tubío (rtpardavila[at]gmail.com)
  * @version 0.1
@@ -23,15 +23,16 @@
  */
 
 #include "main.h"
-
 #include "logger.h"
 #include "configuration.h"
+#include "udpev/udp_events.h"
 
-/**************************************************** Application definitions */
+/************************************************** Application definitions */
+
 static const char* __x_app_name = "udpip-broadcaster";
 static const char* __x_app_version = "0.1";
 
-/********************************************************* INTERNAL FUNCTIONS */
+/******************************************************* INTERNAL FUNCTIONS */
 
 /* print_help */
 void print_help()
@@ -48,13 +49,35 @@ void print_version()
 /* main */
 int main(int argc, char **argv)
 {
-
-	configuration_t *cfg = NULL;
 	
-	/* 1) Runtime configuration is read from the CLI (POSIX.2). */
-	cfg = create_configuration(argc, argv);
+	// 1) Runtime configuration is read from the CLI (POSIX.2).
+	configuration_t *cfg = create_configuration(argc, argv);
 	print_configuration(cfg);
 
+	// 2) Create UDP socket event managers:
+	udp_events_t *udp_rx = init_rx_udp_events
+									(cfg->rx_port, cb_recvfrom);
+	printf("> UDP RX socket open, port = %d, fd = %d.\n"
+			, cfg->rx_port, udp_rx->socket_fd);
+	udp_events_t *udp_tx
+		= init_tx_udp_events(cfg->if_name, cfg->tx_port
+								, cb_broadcast_sendto, true);
+	printf("> UDP TX socket open, port = %d, fd = %d.\n"
+				, cfg->tx_port, udp_tx->socket_fd);
+
+	/*
+	udp_events_t *app_udp_rx = init_rx_udp_events
+									(cfg->app_rx_port, cb_recvfrom);
+	printf("> UDP APP RX socket open, fd = %d.\n", app_udp_rx->socket_fd);
+	udp_events_t *app_udp_tx
+		= init_tx_udp_events(cfg->if_name, cfg->app_tx_port, NULL, false);
+	printf("> UDP APP TX socket open, fd = %d.\n", app_udp_tx->socket_fd);
+	*/
+
+	// 3) loop that waits for events to occur...
+	ev_loop(udp_rx->loop, 0);
+
+	// 4) program finalization
 	exit(EXIT_SUCCESS);
 
 }

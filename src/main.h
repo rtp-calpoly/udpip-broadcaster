@@ -1,4 +1,4 @@
-/*
+/**
  * @file main.h
  * @author Ricardo Tubío (rtpardavila[at]gmail.com)
  * @version 0.1
