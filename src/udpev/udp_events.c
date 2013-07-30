@@ -44,7 +44,7 @@ udp_events_t *init_tx_udp_events
 	if ( broadcast == true )
 		{ s->socket_fd = open_broadcast_udp_socket(iface, port); }
 	else
-		{ s->socket_fd = open_udp_socket(port); }
+		{ s->socket_fd = open_receiver_udp_socket(port); }
 
 	if ( init_watcher(s, callback, EV_WRITE, port) < 0 )
 		{ handle_app_error("init_tx_udp_events: <init_watcher> error.\n"); }
@@ -59,7 +59,7 @@ udp_events_t *init_rx_udp_events
 {
 
 	udp_events_t *s = new_udp_events();
-	s->socket_fd = open_udp_socket(port);
+	s->socket_fd = open_receiver_udp_socket(port);
 
 	if ( init_watcher(s, callback, EV_READ, port) < 0 )
 		{ handle_app_error("init_rx_udp_events: <init_watcher> error.\n"); }
@@ -165,6 +165,7 @@ void cb_recvfrom(public_ev_arg_t *arg)
 
 	printf(">>> RECEIVED UDP MESSAGE >>>\n");
 	print_hex_data(arg->data, bytes_read);
+	printf("\n");
 
 }
 

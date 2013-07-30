@@ -89,13 +89,13 @@ sockaddr_in_t *new_any_sockaddr_in(const int port)
 {
 	sockaddr_in_t *s = new_sockaddr_in();
 	s->sin_family = AF_INET;
-	s->sin_port = port;
+	s->sin_port = htons(port);
 	s->sin_addr.s_addr = htonl(INADDR_ANY);
 	return(s);
 }
 
-/* open_udp_socket */
-int open_udp_socket(const int port)
+/* open_receiver_udp_socket */
+int open_receiver_udp_socket(const int port)
 {
 
 	int fd = -1;
@@ -106,8 +106,6 @@ int open_udp_socket(const int port)
 
 	// 2) local address for binding
 	sockaddr_in_t* addr = new_any_sockaddr_in(port);
-
-	// 3) bind socket to local address
 	if ( bind(fd, (sockaddr_t *)addr, LEN__SOCKADDR_IN) < 0 )
 		{ handle_sys_error("open_udp_socket: <bind> returns error.\n"); }
 
@@ -125,21 +123,14 @@ int open_broadcast_udp_socket(const char *iface, const int port)
 	if ( ( fd = socket(AF_INET, SOCK_DGRAM, 0) ) < 0 )
 		{ handle_sys_error("open_udp_socket: <socket> returns error.\n"); }
 
-	// 2) local address for binding
-	sockaddr_in_t* addr = new_broadcast_sockaddr_in(port);
-
-	// 4) bind socket to local address
-	if ( bind(fd, (sockaddr_t *)addr, LEN__SOCKADDR_IN) < 0 )
-		{ handle_sys_error("open_udp_socket: <bind> returns error.\n"); }
-
-	// 3) set broadcast socket options
+	// 2) set broadcast socket options
 	if ( set_broadcast_socket(fd) < 0 )
 	{
 		handle_app_error("open_broadcast_udp_socket: " \
 							"<set_broadcast_socket> returns error.\n");
 	}
 
-	// 5) broadcast socket must be bound to a specific network interface
+	// 3) broadcast socket must be bound to a specific network interface
 	if ( set_bindtodevice_socket(iface, fd) < 0 )
 	{
 		handle_app_error("open_broadcast_udp_socket: " \

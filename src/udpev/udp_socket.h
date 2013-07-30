@@ -97,7 +97,7 @@ int set_bindtodevice_socket(const char *if_name, const int socket_fd);
  * @param port The UDP port to be used by this socket.
  * @return File descriptor of the opened UDP socket.
  */
-int open_udp_socket(const int port);
+int open_receiver_udp_socket(const int port);
 
 /**
  * @brief Creates and binds an UDP socket that uses the given port with
