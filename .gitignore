@@ -3,7 +3,6 @@ docs/html
 src/netleveltool
 src/*.[oa]
 src/.deps
-src/Makefile.am
 src/Makefile
 /config.h
 /config.log
@@ -16,7 +15,6 @@ src/Makefile
 /depcomp
 /libtool
 /ltmain.sh
-/Makefile.am
 /missing
 /autom4te.cache
 /aclocal.m4
