@@ -8,7 +8,6 @@ src/Makefile
 /config.log
 /config.status
 /Makefile
-/configure.ac
 /autoscan.log
 /config.guess
 /config.sub
