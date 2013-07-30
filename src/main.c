@@ -51,38 +51,37 @@ int main(int argc, char **argv)
 {
 	
 	// 1) Runtime configuration is read from the CLI (POSIX.2).
+	log_app_msg(">>> Reading configuration...\n");
 	configuration_t *cfg = create_configuration(argc, argv);
+	log_app_msg(">>> Configuration read! Printing data...\n");
 	print_configuration(cfg);
 
 	// 2) Create UDP socket event managers:
 
-	udp_events_t *events = NULL;
+	udp_events_t *net_events = NULL;
+	udp_events_t *app_events = NULL;
 
 	if ( cfg->__tx_test == true )
 	{
-		events = init_tx_udp_events(cfg->if_name, cfg->tx_port
+		net_events = init_tx_udp_events(cfg->if_name, cfg->tx_port
 										, cb_broadcast_sendto, true);
 		printf("> UDP TX socket open, port = %d, fd = %d.\n"
-					, cfg->tx_port, events->socket_fd);
+					, cfg->tx_port, net_events->socket_fd);
 	}
 	else
 	{
-		events = init_rx_udp_events(cfg->rx_port, cb_recvfrom);
+		net_events = init_rx_udp_events(cfg->rx_port, cb_print_recvfrom);
 		printf("> UDP RX socket open, port = %d, fd = %d.\n"
-					, cfg->rx_port, events->socket_fd);
+					, cfg->rx_port, net_events->socket_fd);
+
+		app_events = init_rx_udp_events(cfg->app_rx_port, cb_print_recvfrom);
+		printf("> UDP APP RX socket open, port = %d, fd = %d.\n"
+					, cfg->app_rx_port, app_events->socket_fd);
+
 	}
 
-	/*
-	udp_events_t *app_udp_rx = init_rx_udp_events
-									(cfg->app_rx_port, cb_recvfrom);
-	printf("> UDP APP RX socket open, fd = %d.\n", app_udp_rx->socket_fd);
-	udp_events_t *app_udp_tx
-		= init_tx_udp_events(cfg->if_name, cfg->app_tx_port, NULL, false);
-	printf("> UDP APP TX socket open, fd = %d.\n", app_udp_tx->socket_fd);
-	*/
-
-	// 3) loop that waits for events to occur...
-	ev_loop(events->loop, 0);
+	// 3) loop that waits for net_events to occur...
+	ev_loop(net_events->loop, 0);
 
 	// 4) program finalization
 	exit(EXIT_SUCCESS);

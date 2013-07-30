@@ -28,6 +28,7 @@
 #include <sys/socket.h>
 #include <net/if.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include "../logger.h"
 #include "../execution_codes.h"
@@ -70,8 +71,30 @@ typedef struct sockaddr_in sockaddr_in_t;		/*!< Type for sockaddr_in. */
  */
 sockaddr_in_t *new_sockaddr_in();
 
-sockaddr_in_t *new_broadcast_sockaddr_in(const int port);
-sockaddr_in_t *new_any_sockaddr_in(const int port);
+/**
+ * @brief Initializes a sockaddr_in structure for broadcasting messages in
+ * 			the given port.
+ * @param port The port to use for broadcasting.
+ * @result An initialized sockaddr_in structure.
+ */
+sockaddr_in_t *init_broadcast_sockaddr_in(const int port);
+
+/**
+ * @brief Initializes a sockaddr_in structure for receiving messages from
+ * 			any source address, which were sent to the given port.
+ * @param port The port where the messages were sent to.
+ * @result An initialized sockaddr_in structure.
+ */
+sockaddr_in_t *init_any_sockaddr_in(const int port);
+
+/**
+ * @brief Initializes a sockaddr_in structure for sending messages to the
+ * 			given source address and port.
+ * @param address The address where the messages will be sent to.
+ * @param port The port where the messages will be sent to.
+ * @result An initialized sockaddr_in structure.
+ */
+sockaddr_in_t *init_sockaddr_in(const char *address, const int port);
 
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 // UDP SOCKET MANAGEMENT
@@ -100,6 +123,13 @@ int set_bindtodevice_socket(const char *if_name, const int socket_fd);
 int open_receiver_udp_socket(const int port);
 
 /**
+ * @brief Creates and DOES NOT BIND an UDP socket that uses the given port.
+ * @param port The UDP port to be used by this socket.
+ * @return File descriptor of the opened UDP socket.
+ */
+int open_transmitter_udp_socket(const int port);
+
+/**
  * @brief Creates and binds an UDP socket that uses the given port with
  * 			broadcasting privileges.
  * @param iface Interface where the socket is expected to be bound.
@@ -107,6 +137,12 @@ int open_receiver_udp_socket(const int port);
  * @return File descriptor of the opened UDP socket.
  */
 int open_broadcast_udp_socket(const char *if_name, const int port);
+
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+// SOCKET DATA TRANSMISSION
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+int send_message();
 
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 // COMMON SOCKET TOOLS

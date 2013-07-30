@@ -25,17 +25,22 @@
 /* new_ifreq */
 ifreq_t *new_ifreq()
 {
+
 	ifreq_t *s = NULL;
+
 	if ( ( s = (ifreq_t *)malloc(LEN__IFREQ) ) == NULL )
 		{ handle_sys_error("new_ifreq: <malloc> returns NULL.\n"); }
 	if ( memset(s, 0, LEN__IFREQ) == NULL )
 		{ handle_sys_error("new_ifreq: <memset> returns NULL.\n"); }
+
 	return(s);
+
 }
 
 /* init_ifreq */
 ifreq_t *init_ifreq(const char *if_name)
 {
+
 	ifreq_t *s = new_ifreq();
 	int if_name_len = 0;
 	int ifr_name_len = sizeof(s->ifr_name);
@@ -50,48 +55,82 @@ ifreq_t *init_ifreq(const char *if_name)
 		{ handle_sys_error("init_ifreq: <strncpy> returns NULL.\n"); }
 
 	return(s);
+
 }
 
 /* new_sockaddr */
 sockaddr_t *new_sockaddr()
 {
+
 	sockaddr_t *s = NULL;
+
 	if ( ( s = (sockaddr_t *)malloc(LEN__SOCKADDR) ) == NULL )
 		{ handle_sys_error("new_sockaddr: <malloc> returns NULL.\n"); }
 	if ( memset(s, 0, LEN__SOCKADDR) == NULL )
 		{ handle_sys_error("new_sockaddr: <memset> returns NULL.\n"); }
+
 	return(s);
+
 }
 
 /* new_sockaddr_in */
 sockaddr_in_t *new_sockaddr_in()
 {
+
 	sockaddr_in_t *s = NULL;
+
 	if ( ( s = (sockaddr_in_t *)malloc(LEN__SOCKADDR_IN) ) == NULL )
 		{ handle_sys_error("new_sockaddr_in: <malloc> returns NULL.\n"); }
 	if ( memset(s, 0, LEN__SOCKADDR) == NULL )
 		{ handle_sys_error("new_sockaddr_in: <memset> returns NULL.\n"); }
+
 	return(s);
+
 }
 
-/* new_broadcast_sockaddr_in */
-sockaddr_in_t *new_broadcast_sockaddr_in(const int port)
+/* init_broadcast_sockaddr_in */
+sockaddr_in_t *init_broadcast_sockaddr_in(const int port)
 {
+
 	sockaddr_in_t *s = new_sockaddr_in();
+
 	s->sin_family = AF_INET;
 	s->sin_port = (in_port_t)htons(port);
 	s->sin_addr.s_addr = htonl(INADDR_BROADCAST);
+
 	return(s);
+
 }
 
-/* new_any_sockaddr_in */
-sockaddr_in_t *new_any_sockaddr_in(const int port)
+/* init_any_sockaddr_in */
+sockaddr_in_t *init_any_sockaddr_in(const int port)
 {
+
 	sockaddr_in_t *s = new_sockaddr_in();
+
 	s->sin_family = AF_INET;
-	s->sin_port = htons(port);
+	s->sin_port = (in_port_t)htons(port);
 	s->sin_addr.s_addr = htonl(INADDR_ANY);
+
 	return(s);
+
+}
+
+/* init_sockaddr_in */
+sockaddr_in_t *init_sockaddr_in(const char *address, const int port)
+{
+
+	sockaddr_in_t *s = new_sockaddr_in();
+
+	s->sin_family = AF_INET;
+	s->sin_port = (in_port_t)htons(port);
+
+	if ( ( s->sin_addr.s_addr = inet_addr(address) ) < 0 )
+		{ handle_sys_error("init_sockaddr_in: " \
+							"<inet_addr> returns error.\n"); }
+
+	return(s);
+
 }
 
 /* open_receiver_udp_socket */
@@ -105,9 +144,23 @@ int open_receiver_udp_socket(const int port)
 		{ handle_sys_error("open_udp_socket: <socket> returns error.\n"); }
 
 	// 2) local address for binding
-	sockaddr_in_t* addr = new_any_sockaddr_in(port);
+	sockaddr_in_t* addr = init_any_sockaddr_in(port);
 	if ( bind(fd, (sockaddr_t *)addr, LEN__SOCKADDR_IN) < 0 )
 		{ handle_sys_error("open_udp_socket: <bind> returns error.\n"); }
+
+	return(fd);
+
+}
+
+/* open_transmitter_udp_socket */
+int open_transmitter_udp_socket(const int port)
+{
+
+	int fd = -1;
+
+	// 1) socket creation
+	if ( ( fd = socket(AF_INET, SOCK_DGRAM, 0) ) < 0 )
+		{ handle_sys_error("open_udp_socket: <socket> returns error.\n"); }
 
 	return(fd);
 
@@ -144,23 +197,58 @@ int open_broadcast_udp_socket(const char *iface, const int port)
 /* set_broadcast_socket */
 int set_broadcast_socket(const int socket_fd)
 {
+
 	int bcast = 1;
+
 	if ( setsockopt(socket_fd, SOL_SOCKET, SO_BROADCAST, &bcast, sizeof(int))
 			< 0 )
 		{ handle_sys_error("set_broadcast_socket: " \
 							"<setsockopt> returns error."); }
+
 	return(EX_OK);
+
 }
 
 /* set_bindtodevice_socket */
 int set_bindtodevice_socket(const char *if_name, const int socket_fd)
 {
+
 	ifreq_t *ifr = init_ifreq(if_name);
+
 	if ( setsockopt(socket_fd, SOL_SOCKET, SO_BINDTODEVICE, ifr, LEN__IFREQ)
 			< 0 )
 		{ handle_sys_error("set_bindtodevice_socket: " \
 							"<setsockopt> returns error"); }
+
 	return(EX_OK);
+
+}
+
+/* send_message */
+int send_message(	const sockaddr_t* dest_addr, const int socket_fd,
+					const void *buffer, const int len	)
+{
+
+	int sent_bytes = 0;
+
+	if ( ( sent_bytes = sendto(socket_fd, buffer, len
+								, 0, dest_addr, LEN__SOCKADDR_IN) ) < 0 )
+	{
+		log_sys_error("cb_broadcast_sendto (fd=%d): <sendto> ERROR.\n"
+						, socket_fd);
+		getchar();
+		return(EX_ERR);
+	}
+
+	if ( sent_bytes < len )
+	{
+		log_app_msg("send_message: sent %d bytes, requested %d.\n"
+						, sent_bytes, len);
+		return(EX_ERR);
+	}
+
+	return(EX_OK);
+
 }
 
 /* print_hex_data */

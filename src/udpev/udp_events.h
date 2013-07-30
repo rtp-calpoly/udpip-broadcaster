@@ -48,6 +48,13 @@ typedef struct public_ev_arg
 	int socket_fd;					/**< Socket file descriptor. */
 	int port;						/**< Port to be used. */
 
+	int forwarding_socket_fd;		/**< Socket for message forwarding. */
+	int forwarding_port;			/**< Port for message forwarding. */
+
+	sockaddr_in_t *forwarding_addr;	/**< Forwarding address. */
+
+	bool print_forwarding_message;	/**< Flag that enables verbose. */
+
 	void *data;						/**< Buffer for frames reception. */
 	int len;						/**< Data length within the buffer. */
 
@@ -120,7 +127,7 @@ udp_events_t *init_tx_udp_events
 			, const ev_cb_t callback, const bool broadcast);
 
 /**
- * @brief Initializes a new structure for handling libev's transmissio
+ * @brief Initializes a new structure for handling libev's transmission
  * 			events for an UDP socket to transmit broadcast messages using the
  * 			given port.
  * @param port Port to which this socket will be bound to.
@@ -132,6 +139,21 @@ udp_events_t *init_tx_udp_events
  */
 udp_events_t *init_rx_udp_events
 	(const int port, const ev_cb_t callback);
+
+/**
+ * @brief Initializes a new structure for handling libev's reception events
+ * 			for an UDP socket which will trigger the immediate forwarding
+ * 			of those messages to the app_tx_port.
+ * @param net_rx_port UDP port where messages are to be received from the
+ * 						network.
+ * @param app_fwd_addr Network address of the application.
+ * @param app_fwd_port UDP port where messages received from the network
+ * 						are forwarded to applications.
+ * @return Structure for management just configured.
+ */
+udp_events_t *init_net_udp_events
+				(	const int net_rx_port,
+					const char *app_fwd_addr, const int app_fwd_port	);
 
 /**
  * @brief Releases all resources that previously were allocated for this
@@ -190,7 +212,7 @@ void cb_common
  * 			put available for reading.
  * @param public_arg Public arguments for this callback function.
  */
-void cb_recvfrom(public_ev_arg_t *arg);
+void cb_print_recvfrom(public_ev_arg_t *arg);
 
 /**
  * @brief Callback function that writes the given socket which has just been
@@ -198,5 +220,12 @@ void cb_recvfrom(public_ev_arg_t *arg);
  * @param public_arg Public arguments for this callback function.
  */
 void cb_broadcast_sendto(public_ev_arg_t *arg);
+
+/**
+ * @brief Callback function that forwards an UDP message that it receives to
+ * 			a given forwarding socket.
+ * @param public_arg Public arguments for this callback function.
+ */
+void cb_forward_recvfrom(public_ev_arg_t *arg);
 
 #endif /* UDPEV_MANAGER_H_ */

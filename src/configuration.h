@@ -32,6 +32,7 @@
 #include "execution_codes.h"
 #include "logger.h"
 
+#include <arpa/inet.h>
 #include <net/if.h>
 #include <getopt.h>
 
@@ -53,6 +54,8 @@ typedef struct configuration
 	
 	int app_tx_port;						/**< Application tx port. */
 	int app_rx_port;						/**< Application rx port. */
+	char *app_address;						/**< Application address. */
+	in_addr_t app_inet_addr;				/**< Application inet address. */
 
 	int tx_port;							/**< Network tx port. */
 	int rx_port;							/**< Network rx port. */

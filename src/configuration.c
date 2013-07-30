@@ -62,13 +62,14 @@ int read_configuration(int argc, char** argv, configuration_t* cfg)
 		{"rx",  	required_argument,	NULL, 	'r'	},
 		{"apptx",	required_argument,	NULL, 	'u'	},
 		{"apprx",  	required_argument,	NULL, 	'w'	},
+		{"appaddr", required_argument,  NULL,	'd'	},
 		{"ifname",	required_argument,	NULL,	'i'	},
 		{"txtest",  no_argument,		NULL,   's' },
 		{0,0,0,0}
 	};
 	
 	while
-		( ( read = getopt_long(argc, argv, "hsevt:r:i:u:w:", args, &index) )
+		( ( read = getopt_long(argc, argv, "hsevt:r:i:u:w:d:", args, &index) )
 				> -1 )
 	{
 
@@ -82,6 +83,21 @@ int read_configuration(int argc, char** argv, configuration_t* cfg)
 			case 'r':
 				
 				cfg->rx_port = atoi(optarg);
+				break;
+
+			case 'd':
+
+				if ( strlen(optarg) <= 0 )
+					{ handle_app_error("read_configuration: " \
+										"wrong application address.\n"); }
+				cfg->app_address = optarg;
+				cfg->app_inet_addr = inet_addr(optarg);
+
+				if ( 	( cfg->app_inet_addr < 0 ) ||
+						( cfg->app_inet_addr == 0xFFFFFFFF )	)
+					{ handle_app_error("read_configuration: " \
+										"wrong application address.\n"); }
+
 				break;
 
 			case 'u':
@@ -151,6 +167,12 @@ int check_configuration(configuration_t *cfg)
 	if ( strlen(cfg->if_name) <= 0  )
 		{ handle_app_error("Network interface name must be provided.\n"); }
 
+	if ( cfg->app_address != NULL )
+	{
+		if ( strlen(cfg->app_address) <= 0  )
+			{ handle_app_error("Application address must be provided.\n"); }
+	}
+
 	if ( ( cfg->app_tx_port <= 0 ) || ( cfg->app_rx_port <= 0 ) )
 		{ handle_app_error("Both APP. TX and RX port must be set.\n"); }
 
@@ -166,6 +188,8 @@ void print_configuration(const configuration_t *cfg)
 		{ handle_app_error("Given configuration is NULL.\n"); }
 	
 	log_app_msg(">>> Configuration = \n{\n");
+	log_app_msg("\t.app_addr = %s\n", cfg->app_address);
+	log_app_msg("\t.app_inet_addr = %.2X\n", cfg->app_inet_addr);
 	log_app_msg("\t.app_tx_port = %d\n", cfg->app_tx_port);
 	log_app_msg("\t.app_rx_port = %d\n", cfg->app_rx_port);
 	log_app_msg("\t.tx_port = %d\n", cfg->tx_port);
