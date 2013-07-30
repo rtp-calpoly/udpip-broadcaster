@@ -55,15 +55,22 @@ int main(int argc, char **argv)
 	print_configuration(cfg);
 
 	// 2) Create UDP socket event managers:
-	udp_events_t *udp_rx = init_rx_udp_events
-									(cfg->rx_port, cb_recvfrom);
-	printf("> UDP RX socket open, port = %d, fd = %d.\n"
-			, cfg->rx_port, udp_rx->socket_fd);
-	udp_events_t *udp_tx
-		= init_tx_udp_events(cfg->if_name, cfg->tx_port
-								, cb_broadcast_sendto, true);
-	printf("> UDP TX socket open, port = %d, fd = %d.\n"
-				, cfg->tx_port, udp_tx->socket_fd);
+
+	udp_events_t *events = NULL;
+
+	if ( cfg->__tx_test == true )
+	{
+		events = init_tx_udp_events(cfg->if_name, cfg->tx_port
+										, cb_broadcast_sendto, true);
+		printf("> UDP TX socket open, port = %d, fd = %d.\n"
+					, cfg->tx_port, events->socket_fd);
+	}
+	else
+	{
+		events = init_rx_udp_events(cfg->rx_port, cb_recvfrom);
+		printf("> UDP RX socket open, port = %d, fd = %d.\n"
+					, cfg->rx_port, events->socket_fd);
+	}
 
 	/*
 	udp_events_t *app_udp_rx = init_rx_udp_events
@@ -75,7 +82,7 @@ int main(int argc, char **argv)
 	*/
 
 	// 3) loop that waits for events to occur...
-	ev_loop(udp_rx->loop, 0);
+	ev_loop(events->loop, 0);
 
 	// 4) program finalization
 	exit(EXIT_SUCCESS);

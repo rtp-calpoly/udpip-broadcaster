@@ -29,6 +29,7 @@ configuration_t *new_configuration()
 	configuration_t *cfg = NULL;
 	cfg = (configuration_t *)malloc(LEN__T_CONFIGURATION);
 	memset(cfg, 0, LEN__T_CONFIGURATION);
+	cfg->__tx_test = false;
 	return(cfg);
 
 }
@@ -62,11 +63,12 @@ int read_configuration(int argc, char** argv, configuration_t* cfg)
 		{"apptx",	required_argument,	NULL, 	'u'	},
 		{"apprx",  	required_argument,	NULL, 	'w'	},
 		{"ifname",	required_argument,	NULL,	'i'	},
+		{"txtest",  no_argument,		NULL,   's' },
 		{0,0,0,0}
 	};
 	
 	while
-		( ( read = getopt_long(argc, argv, "hevt:r:i:u:w:", args, &index) )
+		( ( read = getopt_long(argc, argv, "hsevt:r:i:u:w:", args, &index) )
 				> -1 )
 	{
 
@@ -90,6 +92,11 @@ int read_configuration(int argc, char** argv, configuration_t* cfg)
 			case 'w':
 
 				cfg->app_rx_port = atoi(optarg);
+				break;
+
+			case 's':
+
+				cfg->__tx_test = true;
 				break;
 
 			case 'i':
@@ -156,9 +163,7 @@ void print_configuration(const configuration_t *cfg)
 {
 
 	if ( cfg == NULL )
-	{
-		handle_app_error("Given configuration is NULL.\n");
-	}
+		{ handle_app_error("Given configuration is NULL.\n"); }
 	
 	log_app_msg(">>> Configuration = \n{\n");
 	log_app_msg("\t.app_tx_port = %d\n", cfg->app_tx_port);
@@ -166,6 +171,7 @@ void print_configuration(const configuration_t *cfg)
 	log_app_msg("\t.tx_port = %d\n", cfg->tx_port);
 	log_app_msg("\t.rx_port = %d\n", cfg->rx_port);
 	log_app_msg("\t.if_name = %s\n", cfg->if_name);
+	log_app_msg("\t.__tx_test = %s\n", cfg->__tx_test ? "true" : "false");
 	log_app_msg("}\n");
 	
 }

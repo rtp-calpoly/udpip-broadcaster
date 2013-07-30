@@ -31,6 +31,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define __BOOL(bool_expr) \
+			"%s", #bool_expr, (bool_expr) ? "true" : "false"
+
 #define handle_sys_error(msg) \
            	do { perror(msg); exit(EXIT_FAILURE); } while (0)
 

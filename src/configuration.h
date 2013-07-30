@@ -54,10 +54,12 @@ typedef struct configuration
 	int app_tx_port;						/**< Application tx port. */
 	int app_rx_port;						/**< Application rx port. */
 
-	int tx_port;							/*!< Network tx port. */
-	int rx_port;							/*!< Network rx port. */
+	int tx_port;							/**< Network tx port. */
+	int rx_port;							/**< Network rx port. */
 	
-	char if_name[LEN__LL_IF_NAME_BUFFER];	/*!< Name of the interface. */
+	char if_name[LEN__LL_IF_NAME_BUFFER];	/**< Name of the interface. */
+
+	bool __tx_test;							/**< Indicates a TX test. */
 
 } configuration_t;
 

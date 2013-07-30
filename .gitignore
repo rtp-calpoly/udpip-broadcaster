@@ -11,9 +11,7 @@ src/Makefile
 /autoscan.log
 /config.guess
 /config.sub
-/depcomp
 /libtool
 /ltmain.sh
-/missing
 /autom4te.cache
 /aclocal.m4
