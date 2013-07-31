@@ -55,6 +55,9 @@ udp_events_t *init_tx_udp_events
 	if ( init_watcher(s, callback, EV_WRITE, port) < 0 )
 		{ handle_app_error("init_tx_udp_events: <init_watcher> error.\n"); }
 
+	ev_io_arg_t *arg = (ev_io_arg_t *)s->watcher;
+	arg->public_arg.__test_number = 0;
+
 	return(s);
 
 }
@@ -76,10 +79,11 @@ udp_events_t *init_rx_udp_events(const int port, const ev_cb_t callback)
 /* init_net_udp_events */
 udp_events_t *init_net_udp_events
 				(	const int net_rx_port,
-					const char *app_fwd_addr, const int app_fwd_port	)
+					const char *app_fwd_addr, const int app_fwd_port,
+					const ev_cb_t callback)
 {
 
-	udp_events_t *s = init_rx_udp_events(net_rx_port, cb_forward_recvfrom);
+	udp_events_t *s = init_rx_udp_events(net_rx_port, callback);
 	ev_io_arg_t *arg = (ev_io_arg_t *)s->watcher;
 
 	arg->public_arg.forwarding_socket_fd
@@ -89,8 +93,9 @@ udp_events_t *init_net_udp_events
 	arg->public_arg.forwarding_addr
 		= init_sockaddr_in(app_fwd_addr, app_fwd_port);
 
-	// TODO Include flag update within CLI.
-	arg->public_arg.print_forwarding_message = false;
+	arg->public_arg.print_forwarding_message = __verbose;
+
+	arg->public_arg.__test_number = 0;
 
 	return(s);
 
@@ -100,6 +105,17 @@ udp_events_t *init_net_udp_events
 void free_udp_events(udp_events_t *m)
 {
 	free(m);
+}
+
+/* print_udp_events */
+void print_udp_events
+		(const udp_events_t *m, const int rx_port, const int fwd_port)
+{
+	log_app_msg("{\n");
+	log_app_msg("\t* rx_port = %d\n", rx_port);
+	log_app_msg("\t* fw_port = %d\n", fwd_port);
+	log_app_msg("\t* sock_fd = %d\n", m->socket_fd);
+	log_app_msg("}\n");
 }
 
 /* new_ev_io_arg_t */
@@ -115,8 +131,7 @@ ev_io_arg_t *new_ev_io_arg()
 
 /* init_watcher */
 int init_watcher(udp_events_t *m
-				, const ev_cb_t callback, const int events
-				, const int port)
+				, const ev_cb_t callback, const int events, const int port)
 {
 
 	m->loop = EV_DEFAULT;
@@ -173,82 +188,5 @@ void cb_common
 	}
 
 	arg->cb_specfic(public_arg);
-
-}
-
-/* cb_print_recvfrom */
-void cb_print_recvfrom(public_ev_arg_t *arg)
-{
-
-	int bytes_read = 0;
-	sockaddr_t *src_addr = new_sockaddr();
-	socklen_t src_addr_len = 0;
-
-	if ( ( bytes_read = recvfrom(arg->socket_fd
-									, arg->data, UDP_EVENTS_BUFFER_LEN
-									, 0, src_addr, &src_addr_len) ) < 0 )
-	{
-		log_sys_error("cb_readfrom: wrong <recvfrom> call. ");
-		return;
-	}
-
-	printf(">>> RECEIVED UDP MESSAGE >>>\n");
-	print_hex_data(arg->data, bytes_read);
-	printf("\n");
-
-}
-
-#define __TX_DELAY_US 1000000	/**< (usecs) without sending. */
-
-/* cb_broadcast_sendto */
-void cb_broadcast_sendto(public_ev_arg_t *arg)
-{
-
-	char *test = "BROADCAST-BROADCAST-BROADCAST\0";
-	int len = strlen(test);
-	sockaddr_t *dest_addr = (sockaddr_t *)
-			init_broadcast_sockaddr_in(arg->port);
-
-	printf(">>> BROADCAST TEST (fd = %d): sending test[%d] = %s\n"
-			, arg->socket_fd, len, test);
-
-	send_message(dest_addr, arg->socket_fd, test, len);
-
-	if ( usleep(__TX_DELAY_US) < 0 )
-	{
-		log_app_msg("Could not sleep for %d (usecs).\n", __TX_DELAY_US);
-		return;
-	}
-
-}
-
-/* cb_forward_recvfrom */
-void cb_forward_recvfrom(public_ev_arg_t *arg)
-{
-
-	int bytes_read = 0;
-	sockaddr_t *src_addr = new_sockaddr();
-	socklen_t src_addr_len = 0;
-
-	if ( ( bytes_read = recvfrom(arg->socket_fd
-									, arg->data, UDP_EVENTS_BUFFER_LEN
-									, 0, src_addr, &src_addr_len) ) < 0 )
-	{
-		log_sys_error("cb_readfrom: wrong <recvfrom> call. ");
-		return;
-	}
-
-	if ( arg->print_forwarding_message == true )
-	{
-		printf(">>> FORWARDING UDP MESSAGE >>>");
-		print_hex_data(arg->data, bytes_read);
-		printf("\n");
-	}
-
-	int fwd_bytes = send_message
-						(	arg->forwarding_addr, arg->forwarding_socket_fd,
-							arg->data, arg->len	);
-
-	printf(">>> fwd_bytes = %d\n", fwd_bytes);
 
 }

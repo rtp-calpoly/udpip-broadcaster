@@ -28,8 +28,11 @@ configuration_t *new_configuration()
 
 	configuration_t *cfg = NULL;
 	cfg = (configuration_t *)malloc(LEN__T_CONFIGURATION);
+
 	memset(cfg, 0, LEN__T_CONFIGURATION);
 	cfg->__tx_test = false;
+	cfg->__verbose = false;
+
 	return(cfg);
 
 }
@@ -130,6 +133,7 @@ int read_configuration(int argc, char** argv, configuration_t* cfg)
 			case 'e':
 				
 				__verbose = true;
+				cfg->__verbose = true;
 				break;
 
 			case 'v':
@@ -196,6 +200,7 @@ void print_configuration(const configuration_t *cfg)
 	log_app_msg("\t.rx_port = %d\n", cfg->rx_port);
 	log_app_msg("\t.if_name = %s\n", cfg->if_name);
 	log_app_msg("\t.__tx_test = %s\n", cfg->__tx_test ? "true" : "false");
+	log_app_msg("\t.__verbose = %s\n", cfg->__verbose ? "true" : "false");
 	log_app_msg("}\n");
 	
 }

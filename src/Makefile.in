@@ -63,7 +63,8 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_udpipbroadcaster_OBJECTS = configuration.$(OBJEXT) main.$(OBJEXT) \
-	udp_events.$(OBJEXT) udp_socket.$(OBJEXT)
+	cb_udp_events.$(OBJEXT) udp_events.$(OBJEXT) \
+	udp_socket.$(OBJEXT)
 udpipbroadcaster_OBJECTS = $(am_udpipbroadcaster_OBJECTS)
 udpipbroadcaster_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -173,7 +174,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-udpipbroadcaster_SOURCES = configuration.c main.c udpev/udp_events.c udpev/udp_socket.c
+udpipbroadcaster_SOURCES = configuration.c main.c udpev/cb_udp_events.c udpev/udp_events.c udpev/udp_socket.c
 all: all-am
 
 .SUFFIXES:
@@ -258,6 +259,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cb_udp_events.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/configuration.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/udp_events.Po@am__quote@
@@ -276,6 +278,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c `$(CYGPATH_W) '$<'`
+
+cb_udp_events.o: udpev/cb_udp_events.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cb_udp_events.o -MD -MP -MF $(DEPDIR)/cb_udp_events.Tpo -c -o cb_udp_events.o `test -f 'udpev/cb_udp_events.c' || echo '$(srcdir)/'`udpev/cb_udp_events.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cb_udp_events.Tpo $(DEPDIR)/cb_udp_events.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='udpev/cb_udp_events.c' object='cb_udp_events.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cb_udp_events.o `test -f 'udpev/cb_udp_events.c' || echo '$(srcdir)/'`udpev/cb_udp_events.c
+
+cb_udp_events.obj: udpev/cb_udp_events.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cb_udp_events.obj -MD -MP -MF $(DEPDIR)/cb_udp_events.Tpo -c -o cb_udp_events.obj `if test -f 'udpev/cb_udp_events.c'; then $(CYGPATH_W) 'udpev/cb_udp_events.c'; else $(CYGPATH_W) '$(srcdir)/udpev/cb_udp_events.c'; fi`
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cb_udp_events.Tpo $(DEPDIR)/cb_udp_events.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='udpev/cb_udp_events.c' object='cb_udp_events.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cb_udp_events.obj `if test -f 'udpev/cb_udp_events.c'; then $(CYGPATH_W) 'udpev/cb_udp_events.c'; else $(CYGPATH_W) '$(srcdir)/udpev/cb_udp_events.c'; fi`
 
 udp_events.o: udpev/udp_events.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT udp_events.o -MD -MP -MF $(DEPDIR)/udp_events.Tpo -c -o udp_events.o `test -f 'udpev/udp_events.c' || echo '$(srcdir)/'`udpev/udp_events.c

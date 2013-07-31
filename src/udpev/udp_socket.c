@@ -247,7 +247,7 @@ int send_message(	const sockaddr_t* dest_addr, const int socket_fd,
 		return(EX_ERR);
 	}
 
-	return(EX_OK);
+	return(sent_bytes);
 
 }
 

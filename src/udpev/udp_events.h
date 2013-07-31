@@ -58,6 +58,8 @@ typedef struct public_ev_arg
 	void *data;						/**< Buffer for frames reception. */
 	int len;						/**< Data length within the buffer. */
 
+	int __test_number;				/**< For testing, counts no tests. */
+
 } public_ev_arg_t;
 
 #define LEN__PUBLIC_EV_ARG sizeof(public_ev_arg_t)
@@ -123,8 +125,8 @@ udp_events_t *new_udp_events();
  * @return Manager's structure configured.
  */
 udp_events_t *init_tx_udp_events
-		(const char *iface, const int port
-			, const ev_cb_t callback, const bool broadcast);
+				(const char* iface, const int port
+						, const ev_cb_t callback, const bool broadcast);
 
 /**
  * @brief Initializes a new structure for handling libev's transmission
@@ -137,8 +139,7 @@ udp_events_t *init_tx_udp_events
  * 					reception events.
  * @return Manager's structure configured.
  */
-udp_events_t *init_rx_udp_events
-	(const int port, const ev_cb_t callback);
+udp_events_t *init_rx_udp_events(const int port, const ev_cb_t callback);
 
 /**
  * @brief Initializes a new structure for handling libev's reception events
@@ -153,7 +154,8 @@ udp_events_t *init_rx_udp_events
  */
 udp_events_t *init_net_udp_events
 				(	const int net_rx_port,
-					const char *app_fwd_addr, const int app_fwd_port	);
+					const char *app_fwd_addr, const int app_fwd_port,
+					const ev_cb_t callback);
 
 /**
  * @brief Releases all resources that previously were allocated for this
@@ -161,6 +163,13 @@ udp_events_t *init_net_udp_events
  * @param m Pointer to the manager structure.
  */
 void free_udp_events(udp_events_t *m);
+
+/**
+ * @brief Prints the data of the udp_events structure.
+ * @param m The structure whose data is going to be printed out.
+ */
+void print_udp_events
+		(const udp_events_t *m, const int rx_port, const int fwd_port);
 
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 // LIBEV EVENTS MANAGEMENT
@@ -192,11 +201,9 @@ ev_io_arg_t *init_ev_io_arg(const udp_events_t *m
  * @param port Port for the UDP connection.
  */
 int init_watcher(udp_events_t *m
-		, const ev_cb_t callback, const int events, const int port);
+					, const ev_cb_t callback, const int events
+					, const int port);
 
-// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-// LIBEV CALLBACK FUNCTIONS
-// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 /**
  * @brief Callback function for common events processing, <libev>. All events
@@ -206,26 +213,5 @@ int init_watcher(udp_events_t *m
  */
 void cb_common
 	(struct ev_loop *loop, struct ev_io *watcher, int revents);
-
-/**
- * @brief Callback function that reads the given socket which has just been
- * 			put available for reading.
- * @param public_arg Public arguments for this callback function.
- */
-void cb_print_recvfrom(public_ev_arg_t *arg);
-
-/**
- * @brief Callback function that writes the given socket which has just been
- * 			put available for writing. Messages are sent in broadcast mode.
- * @param public_arg Public arguments for this callback function.
- */
-void cb_broadcast_sendto(public_ev_arg_t *arg);
-
-/**
- * @brief Callback function that forwards an UDP message that it receives to
- * 			a given forwarding socket.
- * @param public_arg Public arguments for this callback function.
- */
-void cb_forward_recvfrom(public_ev_arg_t *arg);
 
 #endif /* UDPEV_MANAGER_H_ */

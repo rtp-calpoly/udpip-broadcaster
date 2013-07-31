@@ -1,5 +1,5 @@
 /**
- * @file udp_socket.c
+ * @file udp_socket.h
  * @author Ricardo Tubío (rtpardavila[at]gmail.com)
  * @version 0.1
  *

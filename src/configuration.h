@@ -63,6 +63,7 @@ typedef struct configuration
 	char if_name[LEN__LL_IF_NAME_BUFFER];	/**< Name of the interface. */
 
 	bool __tx_test;							/**< Indicates a TX test. */
+	bool __verbose;							/**< Indicates verbose mode. */
 
 } configuration_t;
 
