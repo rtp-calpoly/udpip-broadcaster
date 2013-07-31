@@ -23,6 +23,8 @@
 #ifndef CB_UDP_EVENTS_H_
 #define CB_UDP_EVENTS_H_
 
+#include <stdio.h>
+
 #include "udp_events.h"
 
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
