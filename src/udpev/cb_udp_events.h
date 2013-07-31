@@ -52,4 +52,12 @@ void cb_broadcast_sendto(public_ev_arg_t *arg);
  */
 void cb_forward_recvfrom(public_ev_arg_t *arg);
 
+/**
+ * @brief Callback function that forwards an UDP message that it receives to
+ * 			a given forwarding socket. The forwarded message is sent through
+ * 			broadcast.
+ * @param public_arg Public arguments for this callback function.
+ */
+void cb_broadcast_recvfrom(public_ev_arg_t *arg);
+
 #endif /* CB_UDP_EVENTS_H_ */

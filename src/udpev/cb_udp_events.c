@@ -103,3 +103,35 @@ void cb_forward_recvfrom(public_ev_arg_t *arg)
 	}
 
 }
+
+/* cb_forward_recvfrom */
+void cb_broadcast_recvfrom(public_ev_arg_t *arg)
+{
+
+	sockaddr_t *src_addr = new_sockaddr();
+	socklen_t src_addr_len = 0;
+
+	arg->len = 0;
+
+	// 1) read UDP message from application level
+	if ( ( arg->len = recvfrom(arg->socket_fd
+									, arg->data, UDP_EVENTS_BUFFER_LEN
+									, 0, src_addr, &src_addr_len) ) < 0 )
+	{
+		log_sys_error("cb_forward_recvfrom: wrong <recvfrom> call. ");
+		return;
+	}
+
+	// 2) forward network level UDP message to network level
+	int fwd_bytes = send_message
+						(	arg->forwarding_addr, arg->forwarding_socket_fd,
+							arg->data, arg->len	);
+
+	if ( arg->print_forwarding_message == true )
+	{
+		log_app_msg(">>> BROADCAST(app:%d>net:%d), msg[%.2d] = %s\n"
+				, arg->port, arg->forwarding_port, fwd_bytes
+				, (char *)arg->data);
+	}
+
+}

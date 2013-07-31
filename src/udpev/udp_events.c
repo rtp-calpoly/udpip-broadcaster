@@ -101,6 +101,28 @@ udp_events_t *init_net_udp_events
 
 }
 
+/* init_app_udp_events */
+udp_events_t *init_app_udp_events
+				(	const int app_rx_port,
+					const char* if_name, const int net_fwd_port,
+					const ev_cb_t callback)
+{
+
+	udp_events_t *s = init_rx_udp_events(app_rx_port, callback);
+	ev_io_arg_t *arg = (ev_io_arg_t *)s->watcher;
+
+	arg->public_arg.forwarding_socket_fd
+		= open_broadcast_udp_socket(if_name, net_fwd_port);
+
+	arg->public_arg.forwarding_addr =
+			init_broadcast_sockaddr_in(net_fwd_port);
+	arg->public_arg.forwarding_port = net_fwd_port;
+	arg->public_arg.print_forwarding_message = __verbose;
+
+	return(s);
+
+}
+
 /* free_udp_events */
 void free_udp_events(udp_events_t *m)
 {

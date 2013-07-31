@@ -81,8 +81,9 @@ int main(int argc, char **argv)
 		log_app_msg(">>> UDP NET RX socket open\n");
 		print_udp_events(net_events, cfg->rx_port, cfg->app_rx_port);
 
-		app_events = init_rx_udp_events
-						(cfg->app_tx_port, cb_print_recvfrom);
+		app_events = init_app_udp_events
+						(cfg->app_tx_port, cfg->if_name, cfg->tx_port
+								, cb_broadcast_recvfrom);
 		log_app_msg(">>> UDP APP RX socket open\n");
 		print_udp_events(app_events, cfg->app_tx_port, cfg->tx_port);
 

@@ -157,6 +157,11 @@ udp_events_t *init_net_udp_events
 					const char *app_fwd_addr, const int app_fwd_port,
 					const ev_cb_t callback);
 
+udp_events_t *init_app_udp_events
+				(	const int app_rx_port,
+					const char* if_name, const int net_fwd_port,
+					const ev_cb_t callback);
+
 /**
  * @brief Releases all resources that previously were allocated for this
  * 			manager.
