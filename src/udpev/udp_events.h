@@ -29,6 +29,7 @@
 
 #include "../configuration.h"
 #include "../execution_codes.h"
+
 #include "udp_socket.h"
 
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -52,11 +53,14 @@ typedef struct public_ev_arg
 	int forwarding_port;			/**< Port for message forwarding. */
 
 	sockaddr_in_t *forwarding_addr;	/**< Forwarding address. */
+	sockaddr_in_t *local_addr;		/**< Local address (NOT localhost) */
 
 	bool print_forwarding_message;	/**< Flag that enables verbose. */
 
 	void *data;						/**< Buffer for frames reception. */
 	int len;						/**< Data length within the buffer. */
+
+	msg_header_t *msg_header;		/**< Buffer for msg_header reception. */
 
 	int __test_number;				/**< For testing, counts no tests. */
 
@@ -105,8 +109,6 @@ typedef struct udp_events
 // UDP EVENTS SOCKET
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-#define UDP_EVENTS_BUFFER_LEN 5000 	/**< Size of the RX/TX buffers. */
-
 /**
  * @brief Creates a new structure for handling events with this manager.
  * @return The structure that holds the current state of the manager.
@@ -125,7 +127,7 @@ udp_events_t *new_udp_events();
  * @return Manager's structure configured.
  */
 udp_events_t *init_tx_udp_events
-				(const char* iface, const int port
+				(const char* if_name, const int port
 						, const ev_cb_t callback, const bool broadcast);
 
 /**
@@ -139,7 +141,8 @@ udp_events_t *init_tx_udp_events
  * 					reception events.
  * @return Manager's structure configured.
  */
-udp_events_t *init_rx_udp_events(const int port, const ev_cb_t callback);
+udp_events_t *init_rx_udp_events(const int port, const char* if_name
+									, const ev_cb_t callback);
 
 /**
  * @brief Initializes a new structure for handling libev's reception events
@@ -153,7 +156,7 @@ udp_events_t *init_rx_udp_events(const int port, const ev_cb_t callback);
  * @return Structure for management just configured.
  */
 udp_events_t *init_net_udp_events
-				(	const int net_rx_port,
+				(	const int net_rx_port, const char* net_if_name,
 					const char *app_fwd_addr, const int app_fwd_port,
 					const ev_cb_t callback);
 
@@ -191,10 +194,13 @@ ev_io_arg_t *new_ev_io_arg();
  * @param m Structure with data about UDP events initialization.
  * @param callback Callback function for the registered events.
  * @param port Port for the UDP connection.
+ * @param if_name Name of the interface.
  * @return A pointer to the initialized structure.
  */
 ev_io_arg_t *init_ev_io_arg(const udp_events_t *m
-							, const ev_cb_t callback, const int port);
+							, const ev_cb_t callback
+							, const int port
+							, const char* if_name);
 
 /**
  * @brief Initializes the callback functions for the events given as the last
@@ -204,11 +210,11 @@ ev_io_arg_t *init_ev_io_arg(const udp_events_t *m
  * @param events Flags with the events that will be processed by the given
  * 					callback function.
  * @param port Port for the UDP connection.
+ * @param if_name Name of the interface.
  */
 int init_watcher(udp_events_t *m
-					, const ev_cb_t callback, const int events
-					, const int port);
-
+				, const ev_cb_t callback, const int events
+				, const int port, const char* if_name);
 
 /**
  * @brief Callback function for common events processing, <libev>. All events

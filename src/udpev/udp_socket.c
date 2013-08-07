@@ -88,6 +88,64 @@ sockaddr_in_t *new_sockaddr_in()
 
 }
 
+/* new_iovec */
+iovec_t *new_iovec()
+{
+
+	iovec_t *s = NULL;
+
+	if ( ( s = (iovec_t *)malloc(LEN__IOVEC) ) == NULL )
+		{ handle_sys_error("new_iovec: <malloc> returns NULL.\n"); }
+	if ( memset(s, 0, LEN__IOVEC) == NULL )
+		{ handle_sys_error("new_iovec: <memset> returns NULL.\n"); }
+
+	return(s);
+
+}
+
+/* new_msg_header */
+msg_header_t *new_msg_header()
+{
+
+	msg_header_t *s = NULL;
+
+	if ( ( s = (msg_header_t *)malloc(LEN__MSG_HEADER) ) == NULL )
+		{ handle_sys_error("new_msg_header: <malloc> returns NULL.\n"); }
+	if ( memset(s, 0, LEN__MSG_HEADER) == NULL )
+		{ handle_sys_error("new_msg_header: <memset> returns NULL.\n"); }
+
+	if ( ( s->msg_control = malloc(CONTROL_BUFFER_LEN) ) == NULL )
+		{ handle_sys_error("init_msg_header: <malloc> returns NULL.\n"); }
+	if ( memset(s->msg_control, 0, CONTROL_BUFFER_LEN) == NULL )
+		{ handle_sys_error("init_msg_header: <memset> returns NULL.\n"); }
+	s->msg_controllen = CONTROL_BUFFER_LEN;
+
+	s->msg_flags = 0;
+
+	s->msg_name = new_sockaddr_in();
+	s->msg_namelen = LEN__SOCKADDR_IN;
+
+	s->msg_iov = new_iovec();
+	s->msg_iovlen = 0;
+
+	return(s);
+
+}
+
+/* init_msg_header */
+msg_header_t *init_msg_header(void* buffer, const int buffer_len)
+{
+
+	msg_header_t *s = new_msg_header();
+
+	s->msg_iovlen = 1;
+	s->msg_iov->iov_base = buffer;
+	s->msg_iov->iov_len = buffer_len;
+
+	return(s);
+
+}
+
 /* init_broadcast_sockaddr_in */
 sockaddr_in_t *init_broadcast_sockaddr_in(const int port)
 {
@@ -133,6 +191,51 @@ sockaddr_in_t *init_sockaddr_in(const char *address, const int port)
 
 }
 
+/* init_if_sockaddr_in */
+sockaddr_in_t *init_if_sockaddr_in(const char *if_name, const int port)
+{
+
+	sockaddr_in_t *s = NULL;
+	struct ifaddrs *ifaddr, *ifa;
+    int i;
+    char host[NI_MAXHOST];
+
+    if ( getifaddrs(&ifaddr) < 0 )
+    {
+    	handle_sys_error("init_if_sockaddr_in: " \
+    						"<getifaddrs> returned error. Error: ");
+    }
+
+    for ( ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next )
+    {
+
+        if ( ifa->ifa_addr == NULL ) { continue; }
+
+        i = getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in)
+        					, host, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
+
+        if ( 	( strcmp(ifa->ifa_name,if_name) == 0 ) &&
+        		( ifa->ifa_addr->sa_family == AF_INET )		)
+        {
+
+            if ( i != 0 )
+            {
+                handle_app_error("init_if_sockaddr_in: " \
+                					"<getnameinfo> failed: %s\n"
+                						, gai_strerror(i));
+            }
+
+            s = init_sockaddr_in(host, port);
+
+        }
+
+    }
+
+    freeifaddrs(ifaddr);
+	return(s);
+
+}
+
 /* open_receiver_udp_socket */
 int open_receiver_udp_socket(const int port)
 {
@@ -141,12 +244,19 @@ int open_receiver_udp_socket(const int port)
 
 	// 1) socket creation
 	if ( ( fd = socket(AF_INET, SOCK_DGRAM, 0) ) < 0 )
-		{ handle_sys_error("open_udp_socket: <socket> returns error.\n"); }
+		{ handle_sys_error("open_receiver_udp_socket: " \
+							"<socket> returns error. Description"); }
 
 	// 2) local address for binding
 	sockaddr_in_t* addr = init_any_sockaddr_in(port);
 	if ( bind(fd, (sockaddr_t *)addr, LEN__SOCKADDR_IN) < 0 )
-		{ handle_sys_error("open_udp_socket: <bind> returns error.\n"); }
+		{ handle_sys_error("open_receiver_udp_socket: " \
+							"<bind> returns error. Description"); }
+
+	// 3) for analyzing received message's headers
+	if ( set_msghdrs_socket(fd) < 0 )
+		{ handle_app_error("open_receiver_udp_socket: " \
+							"<set_msghdrs_socket> returns error.\n"); }
 
 	return(fd);
 
@@ -224,6 +334,21 @@ int set_bindtodevice_socket(const char *if_name, const int socket_fd)
 
 }
 
+/* set_msghdrs_socket */
+int set_msghdrs_socket(const int socket_fd)
+{
+
+	ifreq_t *ifr = new_ifreq();
+
+	if ( setsockopt(socket_fd, IPPROTO_IP, IP_PKTINFO, &ifr, LEN__IFREQ)
+			< 0 )
+	{ handle_sys_error("set_generate_headers: " \
+						"<setsockopt> returns error"); }
+
+	return(EX_OK);
+
+}
+
 /* send_message */
 int send_message(	const sockaddr_t* dest_addr, const int socket_fd,
 					const void *buffer, const int len	)
@@ -251,6 +376,77 @@ int send_message(	const sockaddr_t* dest_addr, const int socket_fd,
 
 }
 
+/* recv_message */
+int recv_message(const int socket_fd, void *data)
+{
+
+	int rx_bytes = 0;
+
+	if ( ( rx_bytes = recvfrom(socket_fd, data, UDP_BUFFER_LEN
+								, 0, NULL, NULL) ) < 0 )
+	{
+		log_sys_error("recv_message: wrong <recvfrom> call. ");
+		return(EX_ERR);
+	}
+
+	return(rx_bytes);
+
+}
+
+/* recv_msg */
+int recv_msg(	const int socket_fd, msg_header_t *msg,
+				const in_addr_t block_ip, bool *blocked	)
+{
+
+	int rx_bytes = 0;
+
+	// 1) read UDP message from network level
+	if ( ( rx_bytes = recvmsg(socket_fd, msg, 0) ) < 0 )
+	{
+		log_sys_error("recv_msg: wrong <recvmsg> call. ");
+		return(EX_ERR);
+	}
+
+	in_addr_t src_addr = get_source_address(msg);
+
+	if ( block_ip == src_addr )
+		{ *blocked = true; }
+	else
+		{ *blocked = false; }
+
+	return(rx_bytes);
+
+}
+
+/* get_source_address */
+in_addr_t get_source_address(msg_header_t *msg)
+{
+
+	sockaddr_in_t *src = NULL;
+
+	// iterate through all the control headers
+	for	(
+			struct cmsghdr *cmsg = CMSG_FIRSTHDR(msg);
+			cmsg != NULL;
+			cmsg = CMSG_NXTHDR(msg, cmsg)
+		)
+	{
+
+		// ignore the control headers that don't match what we want
+	    if (	( cmsg->cmsg_level 	!= IPPROTO_IP ) 	||
+	    		( cmsg->cmsg_type 	!= IP_PKTINFO ) )
+	    	{ continue; }
+
+	    //struct in_pktinfo *pi = CMSG_DATA(cmsg);
+	    src = (sockaddr_in_t *)msg->msg_name;
+	    break;
+
+	}
+
+	return(src->sin_addr.s_addr);
+
+}
+
 /* print_hex_data */
 int print_hex_data(const char *buffer, const int len)
 {
@@ -260,7 +456,8 @@ int print_hex_data(const char *buffer, const int len)
 
 	for ( int i = 0; i < len; i++ )
 	{
-		if ( ( i % BYTES_PER_LINE ) == 0 ) { log_app_msg("\n\t\t\t"); }
+		if ( ( i != 0 ) && ( ( i % BYTES_PER_LINE ) == 0 ) )
+			{ log_app_msg("\n\t\t\t"); }
 		log_app_msg("%02X", 0xFF & (unsigned int)buffer[i]);
 		if ( i < last_byte ) { log_app_msg(":"); }
 	}

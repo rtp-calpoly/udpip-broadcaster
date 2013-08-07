@@ -26,20 +26,22 @@
 void cb_print_recvfrom(public_ev_arg_t *arg)
 {
 
-	int bytes_read = 0;
-	sockaddr_t *src_addr = new_sockaddr();
-	socklen_t src_addr_len = 0;
+	bool blocked = false;
+	arg->len = 0;
 
-	if ( ( bytes_read = recvfrom(arg->socket_fd
-									, arg->data, UDP_EVENTS_BUFFER_LEN
-									, 0, src_addr, &src_addr_len) ) < 0 )
+	// 1) read UDP message from network level
+	//		(self-broadcast messages are not received)
+	if ( ( arg->len = recv_msg(arg->socket_fd, arg->msg_header
+								, arg->local_addr->sin_addr.s_addr
+								, &blocked) ) < 0 )
 	{
-		log_sys_error("cb_readfrom: wrong <recvfrom> call. ");
+		log_app_msg("cb_print_recvfrom: <recv_msg> " \
+						"Could not receive message.\n");
 		return;
 	}
 
 	printf(">>> RECEIVED UDP MESSAGE >>>\n");
-	print_hex_data(arg->data, bytes_read);
+	print_hex_data(arg->data, arg->len);
 	printf("\n");
 
 }
@@ -76,30 +78,39 @@ void cb_broadcast_sendto(public_ev_arg_t *arg)
 void cb_forward_recvfrom(public_ev_arg_t *arg)
 {
 
-	sockaddr_t *src_addr = new_sockaddr();
-	socklen_t src_addr_len = 0;
-
+	bool blocked = false;
 	arg->len = 0;
 
 	// 1) read UDP message from network level
-	if ( ( arg->len = recvfrom(arg->socket_fd
-									, arg->data, UDP_EVENTS_BUFFER_LEN
-									, 0, src_addr, &src_addr_len) ) < 0 )
+	//		(self-broadcast messages are not received)
+	if ( ( arg->len = recv_msg(arg->socket_fd, arg->msg_header
+								, arg->local_addr->sin_addr.s_addr
+								, &blocked) ) < 0 )
 	{
-		log_sys_error("cb_forward_recvfrom: wrong <recvfrom> call. ");
+		log_app_msg("cb_forward_recvfrom: <recv_msg> " \
+						"Could not receive message.\n");
 		return;
 	}
 
-	// 2) forward network level UDP message to application level
+	// 2) in case the message comes from the localhost, it is discarded
+	if ( blocked == true )
+	{
+		log_app_msg(">>>@cb_forward_recvfrom: Message blocked!\n");
+		return;
+	}
+
+	// 3) forward network level UDP message to application level
 	int fwd_bytes = send_message
-						(	arg->forwarding_addr, arg->forwarding_socket_fd,
+						(	(sockaddr_t *)arg->forwarding_addr,
+							arg->forwarding_socket_fd,
 							arg->data, arg->len	);
 
 	if ( arg->print_forwarding_message == true )
 	{
-		log_app_msg(">>> fwd(net:%d>app:%d), msg[%.2d] = %s\n"
-				, arg->port, arg->forwarding_port, fwd_bytes
-				, (char *)arg->data);
+		log_app_msg(">>> fwd(net:%d>app:%d), msg[%.2d] = {"
+				, arg->port, arg->forwarding_port, fwd_bytes);
+		print_hex_data(arg->data, arg->len);
+		log_app_msg("}\n");
 	}
 
 }
@@ -108,30 +119,32 @@ void cb_forward_recvfrom(public_ev_arg_t *arg)
 void cb_broadcast_recvfrom(public_ev_arg_t *arg)
 {
 
-	sockaddr_t *src_addr = new_sockaddr();
-	socklen_t src_addr_len = 0;
-
+	bool blocked = false;
 	arg->len = 0;
 
 	// 1) read UDP message from application level
-	if ( ( arg->len = recvfrom(arg->socket_fd
-									, arg->data, UDP_EVENTS_BUFFER_LEN
-									, 0, src_addr, &src_addr_len) ) < 0 )
+	//		(self-broadcast messages are not received)
+	if ( ( arg->len = recv_msg(arg->socket_fd, arg->msg_header
+								, arg->local_addr->sin_addr.s_addr
+								, &blocked) ) < 0 )
 	{
-		log_sys_error("cb_forward_recvfrom: wrong <recvfrom> call. ");
+		log_app_msg("cb_broadcast_recvfrom: <recv_msg> " \
+						"Could not receive message.\n");
 		return;
 	}
 
-	// 2) forward network level UDP message to network level
+	// 2) broadcast application level UDP message to network level
 	int fwd_bytes = send_message
-						(	arg->forwarding_addr, arg->forwarding_socket_fd,
+						(	(sockaddr_t *)arg->forwarding_addr,
+							arg->forwarding_socket_fd,
 							arg->data, arg->len	);
 
 	if ( arg->print_forwarding_message == true )
 	{
-		log_app_msg(">>> BROADCAST(app:%d>net:%d), msg[%.2d] = %s\n"
-				, arg->port, arg->forwarding_port, fwd_bytes
-				, (char *)arg->data);
+		log_app_msg(">>> BROADCAST(app:%d>net:%d), msg[%.2d] = {"
+				, arg->port, arg->forwarding_port, fwd_bytes);
+		print_hex_data(arg->data, arg->len);
+		log_app_msg("}\n");
 	}
 
 }
