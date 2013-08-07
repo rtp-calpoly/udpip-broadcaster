@@ -81,6 +81,8 @@ void cb_forward_recvfrom(public_ev_arg_t *arg)
 	bool blocked = false;
 	arg->len = 0;
 
+	printf("### 1\n");
+
 	// 1) read UDP message from network level
 	//		(self-broadcast messages are not received)
 	if ( ( arg->len = recv_msg(arg->socket_fd, arg->msg_header
@@ -92,12 +94,16 @@ void cb_forward_recvfrom(public_ev_arg_t *arg)
 		return;
 	}
 
+	printf("### 2\n");
+
 	// 2) in case the message comes from the localhost, it is discarded
 	if ( blocked == true )
 	{
 		log_app_msg(">>>@cb_forward_recvfrom: Message blocked!\n");
 		return;
 	}
+
+	printf("### 3\n");
 
 	// 3) forward network level UDP message to application level
 	int fwd_bytes = send_message
