@@ -87,13 +87,14 @@ udp_events_t *init_net_udp_events
 	udp_events_t *s = init_rx_udp_events(net_rx_port, net_if_name, callback);
 	ev_io_arg_t *arg = (ev_io_arg_t *)s->watcher;
 
+	arg->public_arg.local_addr
+		= init_if_sockaddr_in(net_if_name, net_rx_port);
+
 	arg->public_arg.forwarding_socket_fd
 		= open_transmitter_udp_socket(app_fwd_port);
 	arg->public_arg.forwarding_port = app_fwd_port;
-
 	arg->public_arg.forwarding_addr
 		= init_sockaddr_in(app_fwd_addr, app_fwd_port);
-
 	arg->public_arg.print_forwarding_message = __verbose;
 
 	arg->public_arg.__test_number = 0;
@@ -112,11 +113,12 @@ udp_events_t *init_app_udp_events
 	udp_events_t *s = init_rx_udp_events(app_rx_port, if_name, callback);
 	ev_io_arg_t *arg = (ev_io_arg_t *)s->watcher;
 
+	arg->public_arg.local_addr = init_if_sockaddr_in(if_name, net_fwd_port);
+
 	arg->public_arg.forwarding_socket_fd
 		= open_broadcast_udp_socket(if_name, net_fwd_port);
-
-	arg->public_arg.forwarding_addr =
-			init_broadcast_sockaddr_in(net_fwd_port);
+	arg->public_arg.forwarding_addr
+		= init_broadcast_sockaddr_in(net_fwd_port);
 	arg->public_arg.forwarding_port = net_fwd_port;
 	arg->public_arg.print_forwarding_message = __verbose;
 

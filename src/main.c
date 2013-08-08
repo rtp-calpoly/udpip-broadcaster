@@ -59,7 +59,6 @@ int main(int argc, char **argv)
 	print_configuration(cfg);
 
 	// 2) Create UDP socket event managers:
-
 	udp_events_t *net_events = NULL;
 	udp_events_t *app_events = NULL;
 
