@@ -1,5 +1,5 @@
 # flags for the compiler and for the linker
-CFLAGS = --pedantic -std=gnu99 -Wall -O2
+CFLAGS = --pedantic -std=gnu99 -Wall -O0 -g3
 LDFLAGS = -lev
 # binaries to be produced
 bin_PROGRAMS = udpipbroadcaster

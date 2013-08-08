@@ -95,7 +95,7 @@ CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 
 # flags for the compiler and for the linker
-CFLAGS = --pedantic -std=gnu99 -Wall -O2
+CFLAGS = --pedantic -std=gnu99 -Wall -O0 -g3
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
