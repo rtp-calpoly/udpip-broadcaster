@@ -199,6 +199,7 @@ sockaddr_in_t *init_if_sockaddr_in(const char *if_name, const int port)
 	struct ifaddrs *ifaddr, *ifa;
     int i;
     char host[NI_MAXHOST];
+    bool if_found = false;
 
     if ( getifaddrs(&ifaddr) < 0 )
     {
@@ -226,12 +227,20 @@ sockaddr_in_t *init_if_sockaddr_in(const char *if_name, const int port)
             }
 
             s = init_sockaddr_in(host, port);
+            if_found = true;
 
         }
 
     }
 
     freeifaddrs(ifaddr);
+
+    if ( if_found == false )
+    {
+    	handle_app_error("Could not get local interface, if_name = %s.\n"
+    						, if_name);
+    }
+
 	return(s);
 
 }
