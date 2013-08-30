@@ -62,6 +62,8 @@ typedef struct public_ev_arg
 
 	msg_header_t *msg_header;		/**< Buffer for msg_header reception. */
 
+	bool nec_mode;					/**< Flag that indicates NEC mode. */
+
 	int __test_number;				/**< For testing, counts no tests. */
 
 } public_ev_arg_t;
@@ -158,6 +160,7 @@ udp_events_t *init_rx_udp_events(const int port, const char* if_name
 udp_events_t *init_net_udp_events
 				(	const int net_rx_port, const char* net_if_name,
 					const char *app_fwd_addr, const int app_fwd_port,
+					const bool nec_mode,
 					const ev_cb_t callback);
 
 udp_events_t *init_app_udp_events

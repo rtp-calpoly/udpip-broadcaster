@@ -81,6 +81,7 @@ udp_events_t *init_rx_udp_events(const int port, const char* if_name
 udp_events_t *init_net_udp_events
 				(	const int net_rx_port, const char* net_if_name,
 					const char *app_fwd_addr, const int app_fwd_port,
+					const bool nec_mode,
 					const ev_cb_t callback)
 {
 
@@ -97,6 +98,7 @@ udp_events_t *init_net_udp_events
 		= init_sockaddr_in(app_fwd_addr, app_fwd_port);
 	arg->public_arg.print_forwarding_message = __verbose;
 
+	arg->public_arg.nec_mode = nec_mode;
 	arg->public_arg.__test_number = 0;
 
 	return(s);

@@ -51,4 +51,9 @@
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
 		</scannerConfigBuildInfo>
 	</storageModule>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Build (GNU)">
+			<resource resourceType="PROJECT" workspacePath="/udpip-broadcaster"/>
+		</configuration>
+	</storageModule>
 </cproject>

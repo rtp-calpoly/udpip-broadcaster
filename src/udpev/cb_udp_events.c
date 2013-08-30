@@ -46,9 +46,9 @@ void cb_print_recvfrom(public_ev_arg_t *arg)
 
 }
 
-#define __TX_DELAY_US 1000000	/**< (usecs) without sending. */
+#define __TX_DELAY_US 1000000		/**< (usecs) without sending. */
 
-#define __DATA_BUFFER_LEN 100			/**< Length of the buffer. */
+#define __DATA_BUFFER_LEN 100		/**< Length of the buffer. */
 char data[__DATA_BUFFER_LEN];		/**< Static buffer. */
 
 /* cb_broadcast_sendto */
@@ -98,6 +98,8 @@ void cb_forward_recvfrom(public_ev_arg_t *arg)
 		return;
 	}
 
+
+
 	// 3) forward network level UDP message to application level
 	int fwd_bytes = send_message
 						(	(sockaddr_t *)arg->forwarding_addr,
@@ -114,7 +116,7 @@ void cb_forward_recvfrom(public_ev_arg_t *arg)
 
 }
 
-/* cb_forward_recvfrom */
+/* cb_broadcast_recvfrom */
 void cb_broadcast_recvfrom(public_ev_arg_t *arg)
 {
 

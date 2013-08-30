@@ -78,6 +78,7 @@ int main(int argc, char **argv)
 		net_events = init_net_udp_events
 						(cfg->rx_port, cfg->if_name
 								, cfg->app_address, cfg->app_rx_port
+								, cfg->nec_mode
 								, cb_forward_recvfrom);
 		log_app_msg(">>> UDP NET RX socket open!\n");
 		print_udp_events(net_events, cfg->rx_port, cfg->app_rx_port);

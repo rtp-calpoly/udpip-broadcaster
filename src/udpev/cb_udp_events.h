@@ -26,6 +26,7 @@
 #include <stdio.h>
 
 #include "udp_events.h"
+#include "__NEC__gnbtpapi_udp_msg.h"
 
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 // LIBEV CALLBACK FUNCTIONS

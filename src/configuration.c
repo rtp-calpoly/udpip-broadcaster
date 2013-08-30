@@ -54,7 +54,7 @@ configuration_t *create_configuration(int argc, char** argv)
 int read_configuration(int argc, char** argv, configuration_t* cfg)
 {
 
-	int index = 0, read = 0;
+	int idx = 0, read = 0;
     
     static struct option args[] =
 	{
@@ -68,11 +68,12 @@ int read_configuration(int argc, char** argv, configuration_t* cfg)
 		{"appaddr", required_argument,  NULL,	'd'	},
 		{"ifname",	required_argument,	NULL,	'i'	},
 		{"txtest",  no_argument,		NULL,   's' },
+		{"nec",		no_argument,		NULL,	'n' },
 		{0,0,0,0}
 	};
 	
 	while
-		( ( read = getopt_long(argc, argv, "hsevt:r:i:u:w:d:", args, &index) )
+		( ( read = getopt_long(argc, argv, "nhsevt:r:i:u:w:d:", args, &idx) )
 				> -1 )
 	{
 
@@ -128,6 +129,11 @@ int read_configuration(int argc, char** argv, configuration_t* cfg)
 				}
 				
 				strncpy(cfg->if_name, optarg, IF_NAMESIZE);
+				break;
+
+			case 'n':
+
+				cfg->nec_mode = true;
 				break;
 
 			case 'e':
@@ -199,6 +205,7 @@ void print_configuration(const configuration_t *cfg)
 	log_app_msg("\t.tx_port = %d\n", cfg->tx_port);
 	log_app_msg("\t.rx_port = %d\n", cfg->rx_port);
 	log_app_msg("\t.if_name = %s\n", cfg->if_name);
+	log_app_msg("\t.nec_mode = %s\n", cfg->nec_mode ? "true" : "false");
 	log_app_msg("\t.__tx_test = %s\n", cfg->__tx_test ? "true" : "false");
 	log_app_msg("\t.__verbose = %s\n", cfg->__verbose ? "true" : "false");
 	log_app_msg("}\n");
